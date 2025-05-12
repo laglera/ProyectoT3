@@ -1,0 +1,105 @@
+package Proyecto;
+
+import javax.swing.*;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class Buscar_Pelicula extends JFrame {
+    private static final long serialVersionUID = 1L;
+    private JPanel contentPane;
+    private JTextField textField;
+    private JTextArea resultadoTextArea;
+    private ConexionMySQL conexion;
+
+    public Buscar_Pelicula() {
+        setTitle("Buscar Película");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setBounds(600, 300, 650, 400);
+        contentPane = new JPanel();
+        setContentPane(contentPane);
+        contentPane.setLayout(null);
+
+        JLabel lblTitulo = new JLabel("Introduce la película que quieres buscar:");
+        lblTitulo.setFont(new Font("Arial Black", Font.PLAIN, 16));
+        lblTitulo.setBounds(136, 21, 368, 30);
+        contentPane.add(lblTitulo);
+
+        textField = new JTextField();
+        textField.setBounds(193, 62, 250, 30);
+        contentPane.add(textField);
+
+        JButton btnBuscar = new JButton("Buscar");
+        btnBuscar.setBounds(272, 109, 100, 30);
+        contentPane.add(btnBuscar);
+
+     // Crear el JTextArea con configuración mejorada
+        resultadoTextArea = new JTextArea();
+        resultadoTextArea.setEditable(false);
+        resultadoTextArea.setLineWrap(true); // Permite ajustar el texto dentro del área
+        resultadoTextArea.setWrapStyleWord(true); // Evita cortar palabras a la mitad
+
+        // Crear el JScrollPane y agregar el JTextArea dentro
+        JScrollPane scrollPane = new JScrollPane(resultadoTextArea);
+        scrollPane.setBounds(50, 150, 529, 180);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); // Barra de desplazamiento siempre visible
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER); // No permitir desplazamiento horizontal
+
+        // Agregar el JScrollPane en lugar del JTextArea directamente
+        contentPane.add(scrollPane);
+
+
+        // Inicializar conexión con la base de datos
+        conexion = new ConexionMySQL("root", "", "biblioteca");
+
+        btnBuscar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                buscarPelicula();
+            }
+        });
+
+        setVisible(true);
+    }
+
+    private void buscarPelicula() {
+        String tituloBuscado = textField.getText().trim();
+        if (tituloBuscado.isEmpty()) {
+            resultadoTextArea.setText("Por favor, introduce un título.");
+            return;
+        }
+
+        String sql = "SELECT * FROM peliculas WHERE titulo LIKE '%" + tituloBuscado + "%'";
+
+        try {
+            conexion.conectar();
+            ResultSet rs = conexion.ejecutarSelect(sql);
+
+            if (!rs.next()) {
+                resultadoTextArea.setText("No se encontraron resultados.");
+            } else {
+                StringBuilder resultado = new StringBuilder();
+                do {
+                    resultado.append("Título: ").append(rs.getString("titulo")).append("\n");
+                    resultado.append("Director: ").append(rs.getString("director")).append("\n");
+                    resultado.append("Año: ").append(rs.getInt("año")).append("\n");
+                    resultado.append("Género: ").append(rs.getString("genero")).append("\n");
+                    resultado.append("Sinopsis: ").append(rs.getString("sinopsis")).append("\n\n");
+                } while (rs.next());
+
+                resultadoTextArea.setText(resultado.toString());
+            }
+
+            conexion.desconectar();
+        } catch (SQLException ex) {
+            resultadoTextArea.setText("Error al buscar película: " + ex.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
+        new Buscar_Pelicula();
+    }
+}
+
