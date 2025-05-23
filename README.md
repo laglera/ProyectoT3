@@ -47,3 +47,8 @@ Una vez ejecutada la aplicación, podrás acceder a las siguientes funciones:
 - 📥 **Botón de descarga:** instala la app para disfrutar del contenido completo en 4K.
 - 📂 **Menú desplegable:** accede rápidamente a todas las películas desde un selector.
 
+---
+
+## 🚀 Diagrama base de datos
+
+![Diagrama](diagramadefinitivo.png)
